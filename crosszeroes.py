@@ -30,23 +30,27 @@ class GameFieldView:
     """
     Виджет игрового поля, который отображает его на экране, а также выясняет место клика
     """
-    def __init__(self, field) -> None:
+    def __init__(self, field, screen, x, y) -> None:
         # загрузить картинки начков клеток...
         # отобразить первичное состояние поля
         self._field = field
         self._height = field.height * CELL_SIZE
         self._width = field.width * CELL_SIZE
+        self._screen = screen
+        self._x = x
+        self._y = y
     
     def draw(self):
-        pass
+        for i in range(self._field.height):
+            for j in range(self._field.width):
+                pygame.draw.rect(self._screen, (255,255,255), (self._x + j*CELL_SIZE, self._y + i*CELL_SIZE, 
+                                                                CELL_SIZE,CELL_SIZE),1)
 
-
-    def check_coords_correct(self, x, y):
-        return True #TODO: self._height учесть
+    def check_coords_correct(self, x, y):        
+        return x - self._x < self._width and y - self._y < self._height and x > self._x and y > self._y
 
     def get_coords(self, x, y):
-        return (0, 0)  #TODO: реально вычислить клетку
-
+        return ((x - self._x) // CELL_SIZE, (y - self._y) // CELL_SIZE)
 
 class GameRoundManager:
     """
@@ -62,6 +66,9 @@ class GameRoundManager:
         player = self._players[self._current_player]
         # игрок делает клик на поле
         print("click_handled", i, j)
+
+    def is_game_over(self):
+        return False
 
 
 class GameWindow:
@@ -79,17 +86,16 @@ class GameWindow:
         self._title = "Crosses and Zeroes"
         self._screen = pygame.display.set_mode((self._width, self._height))
         pygame.display.set_caption(self._title)
-
-        
         player1 = Player("Петя", Cell.CROSS)
         player2 = Player("Вася", Cell.ZERO)
         self._game_manager = GameRoundManager(player1, player2)
-        self._field_widget = GameFieldView(self._game_manager.field)
+        self._field_widget = GameFieldView(self._game_manager.field, self._screen, 100, 100)
     
     def main_loop(self):
         finished = False
         clock = pygame.time.Clock()
         while not finished:
+            finished = self._game_manager.is_game_over()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
@@ -100,6 +106,7 @@ class GameWindow:
                         i, j = self._field_widget.get_coords(x, y)
                         self._game_manager.handle_click(i, j)
             
+            self._field_widget.draw()
             pygame.display.flip()
             clock.tick(FPS)
 
