@@ -43,14 +43,18 @@ class GameFieldView:
     def draw(self):
         for i in range(self._field.height):
             for j in range(self._field.width):
-                pygame.draw.rect(self._screen, (255,255,255), (self._x + j*CELL_SIZE, self._y + i*CELL_SIZE, 
-                                                                CELL_SIZE,CELL_SIZE),1)
-
+                cur_pos_x = self._x + j*CELL_SIZE
+                cur_pos_y = self._y + i*CELL_SIZE
+                pygame.draw.rect(self._screen, (255,255,255), (cur_pos_x, cur_pos_y, CELL_SIZE, CELL_SIZE),1)
+                if self._field.cells[i][j] == Cell.ZERO:
+                    pygame.draw.circle(self._screen, (255,255,255), (cur_pos_x+CELL_SIZE/2, cur_pos_y+CELL_SIZE/2), (CELL_SIZE-20)/2, 1)
+                if self._field.cells[i][j] == Cell.CROSS:
+                    pygame.draw.rect(self._screen, (255,255,255), (cur_pos_x+10 , cur_pos_y+10, CELL_SIZE-20, CELL_SIZE-20),1)
     def check_coords_correct(self, x, y):        
         return x - self._x < self._width and y - self._y < self._height and x > self._x and y > self._y
 
     def get_coords(self, x, y):
-        return ((x - self._x) // CELL_SIZE, (y - self._y) // CELL_SIZE)
+        return ((y - self._y) // CELL_SIZE, (x - self._x) // CELL_SIZE)
 
 class GameRoundManager:
     """
@@ -66,9 +70,19 @@ class GameRoundManager:
         player = self._players[self._current_player]
         # игрок делает клик на поле
         print("click_handled", i, j)
+        if self.field.cells[i][j] == Cell.VOID:
+            self.field.cells[i][j] = player.cell_type
+            if self._current_player == 0:
+                self._current_player = 1
+            else:
+                self._current_player = 0
 
     def is_game_over(self):
-        return False
+        cur_state = True
+        for i in range(self.field.height):
+            for j in range(self.field.width):
+                cur_state =  cur_state and self.field.cells[i][j] != Cell.VOID
+        return cur_state
 
 
 class GameWindow:
@@ -95,7 +109,7 @@ class GameWindow:
         finished = False
         clock = pygame.time.Clock()
         while not finished:
-            finished = self._game_manager.is_game_over()
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
@@ -106,6 +120,8 @@ class GameWindow:
                         i, j = self._field_widget.get_coords(x, y)
                         self._game_manager.handle_click(i, j)
             
+            # if self._game_manager.is_game_over():
+            #     print("Game over!")
             self._field_widget.draw()
             pygame.display.flip()
             clock.tick(FPS)
