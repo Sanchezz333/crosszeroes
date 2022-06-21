@@ -40,6 +40,12 @@ class GameFieldView:
         self._x = x
         self._y = y
     
+    def get_height(self):
+        return self._height
+
+    def get_width(self):
+        return self._width   
+
     def draw(self):
         for i in range(self._field.height):
             for j in range(self._field.width):
@@ -64,7 +70,13 @@ class GameRoundManager:
         self._players = [player1, player2]
         self._current_player = 0
         self.field = GameField(field_size)
+        self._winner = "No one"
+
+    def get_current_name(self):
+        return self._players[self._current_player].name
         
+    def get_winner_name(self):
+        return self._winner
 
     def handle_click(self, i, j):
         player = self._players[self._current_player]
@@ -124,8 +136,7 @@ class GameWindow:
             
             if self._game_manager.is_game_over():
                 print("Game over!")
-                text = self.font.render(f'{self.player1.name} is win', True, (255, 255, 255))
-                self._screen.blit(text, (100, 30))
+                self.winner_drow(150 + self._field_widget.get_width(), 50 + self._field_widget.get_height()/2)
                 pause = True
                 while pause:
                     for event in pygame.event.get():
@@ -140,7 +151,8 @@ class GameWindow:
 
                 self.new_game()
                 
-
+            self.table_drow(100, 0)
+            self.turn_table_drow(100, 100 + self._field_widget.get_height())
             self._field_widget.draw()
             pygame.display.flip()
             clock.tick(FPS)
@@ -150,6 +162,26 @@ class GameWindow:
         field_size = 3 #int(input("Введите размер поля"))
         self._game_manager = GameRoundManager(self.player1, self.player2, field_size)
         self._field_widget = GameFieldView(self._game_manager.field, self._screen, 100, 100)
+
+    def table_drow(self, x, y):
+        pygame.draw.circle(self._screen, (255,255,255), (x+CELL_SIZE/2, y+CELL_SIZE/2), (CELL_SIZE-20)/2, 1)
+        pygame.draw.rect(self._screen, (255,255,255), (x+10 , y+60, CELL_SIZE-20, CELL_SIZE-20),1)
+        player1 = self.font.render(self.player1.name, True, (255, 255, 255))
+        player2 = self.font.render(self.player2.name, True, (255, 255, 255))
+        self._screen.blit(player1 if self.player1.cell_type == Cell.ZERO else player2 , (x+60, y+10))
+        self._screen.blit(player1 if self.player2.cell_type == Cell.ZERO else player2, (x+60, y+60))
+
+
+    def turn_table_drow(self, x, y):
+        player = self._game_manager.get_current_name()
+        text = self.font.render(f"{player}'s turn", True, (255, 255, 255))
+        self._screen.blit(text, (x+10, y+30))
+
+    def winner_drow(self, x, y):
+        player = self._game_manager.get_winner_name()
+        text = self.font.render(f"{player}' is win", True, (0, 255, 0))
+        self._screen.blit(text, (x+10, y+30))
+
 
 def main():
     window = GameWindow()
