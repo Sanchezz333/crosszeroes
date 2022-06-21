@@ -93,23 +93,25 @@ class GameWindow:
     def __init__(self) -> None:
         # инициализация pygame
         pygame.init()
-
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 36)
+        
         # Window
         self._width = 800
         self._height = 600
         self._title = "Crosses and Zeroes"
         self._screen = pygame.display.set_mode((self._width, self._height))
         pygame.display.set_caption(self._title)
-        player1 = Player("Петя", Cell.CROSS)
-        player2 = Player("Вася", Cell.ZERO)
-        self._game_manager = GameRoundManager(player1, player2)
+        self.player1 = Player("Петя", Cell.CROSS)
+        self.player2 = Player("Вася", Cell.ZERO)
+        self._game_manager = GameRoundManager(self.player1, self.player2)
         self._field_widget = GameFieldView(self._game_manager.field, self._screen, 100, 100)
     
     def main_loop(self):
         finished = False
         clock = pygame.time.Clock()
         while not finished:
-            
+            self._screen.fill((0, 0, 0))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finished = True
@@ -120,11 +122,33 @@ class GameWindow:
                         i, j = self._field_widget.get_coords(x, y)
                         self._game_manager.handle_click(i, j)
             
-            # if self._game_manager.is_game_over():
-            #     print("Game over!")
+            if self._game_manager.is_game_over():
+                print("Game over!")
+                text = self.font.render(f'{self.player1.name} is win', True, (255, 255, 255))
+                self._screen.blit(text, (100, 30))
+                pause = True
+                while pause:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            finished = True
+                            pause = False
+                        elif event.type == pygame.MOUSEBUTTONDOWN:
+                            pause = False
+                    self._field_widget.draw()
+                    pygame.display.flip()
+                    clock.tick(FPS)
+
+                self.new_game()
+                
+
             self._field_widget.draw()
             pygame.display.flip()
             clock.tick(FPS)
+
+    def new_game(self):
+        print("New game!")
+        self._game_manager = GameRoundManager(self.player1, self.player2)
+        self._field_widget = GameFieldView(self._game_manager.field, self._screen, 100, 100)
 
 def main():
     window = GameWindow()
