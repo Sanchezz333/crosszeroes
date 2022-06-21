@@ -20,9 +20,9 @@ class Player:
         
 
 class GameField:
-    def __init__(self) -> None:
-        self.height = 3
-        self.width = 3
+    def __init__(self, size) -> None:
+        self.height = size
+        self.width = size
         self.cells = [[Cell.VOID]*self.width for i in range(self.height)]
 
 
@@ -60,10 +60,10 @@ class GameRoundManager:
     """
     Менеджер игры, запускающий все процессы.
     """
-    def __init__(self, player1: Player, player2: Player):
+    def __init__(self, player1: Player, player2: Player, field_size=3):
         self._players = [player1, player2]
         self._current_player = 0
-        self.field = GameField()
+        self.field = GameField(field_size)
         
 
     def handle_click(self, i, j):
@@ -104,7 +104,7 @@ class GameWindow:
         pygame.display.set_caption(self._title)
         self.player1 = Player("Петя", Cell.CROSS)
         self.player2 = Player("Вася", Cell.ZERO)
-        self._game_manager = GameRoundManager(self.player1, self.player2)
+        self._game_manager = GameRoundManager(self.player1, self.player2, 3)
         self._field_widget = GameFieldView(self._game_manager.field, self._screen, 100, 100)
     
     def main_loop(self):
@@ -147,7 +147,8 @@ class GameWindow:
 
     def new_game(self):
         print("New game!")
-        self._game_manager = GameRoundManager(self.player1, self.player2)
+        field_size = 3 #int(input("Введите размер поля"))
+        self._game_manager = GameRoundManager(self.player1, self.player2, field_size)
         self._field_widget = GameFieldView(self._game_manager.field, self._screen, 100, 100)
 
 def main():
