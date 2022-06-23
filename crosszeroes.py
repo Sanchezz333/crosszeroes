@@ -63,7 +63,8 @@ class GameField:
 
 class GameFieldView:
     """
-    Виджет игрового поля, который отображает его на экране, а также выясняет место клика
+    Виджет игрового поля, который отображает его на экране,
+    а также выясняет место клика
     """
 
     def __init__(self, field, screen, x, y) -> None:
@@ -193,7 +194,7 @@ class GameWindow:
 
     def new_game(self):
         print("New game!")
-        field_size = randint(3, 6)  # int(input("Введите размер поля"))
+        field_size = randint(3, 6)
         self._game_manager = GameRoundManager(self.player1, self.player2, field_size)
         self._field_widget = GameFieldView(
             self._game_manager.field, self._screen, 100, 100
