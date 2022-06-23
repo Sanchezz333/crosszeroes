@@ -1,4 +1,5 @@
 from enum import Enum
+from random import randint
 from this import s
 import pygame
 
@@ -34,7 +35,7 @@ class GameField:
 
     def have_line(self, val, sign):
         if val > self.height or val > self.width:
-            return False
+            val = self.height if self.height < self.width else self.width
         line = False
         for i in range(self.height - val + 1):
             for j in range(self.width - val + 1):
@@ -158,10 +159,9 @@ class GameRoundManager:
         for i in range(self.field.height):
             for j in range(self.field.width):
                 field_is_full = field_is_full and self.field.cells[i][j] != Cell.VOID
-        # TODO: Сделать проверку победителя
         somebody_win = False
         for p in self._players:
-            if self.field.have_line(3, p.cell_type):
+            if self.field.have_line(4, p.cell_type):
                 somebody_win = True
                 self._winner = p.name
                 p.win()
@@ -193,7 +193,7 @@ class GameWindow:
 
     def new_game(self):
         print("New game!")
-        field_size = 3  # int(input("Введите размер поля"))
+        field_size = randint(3, 6)  # int(input("Введите размер поля"))
         self._game_manager = GameRoundManager(self.player1, self.player2, field_size)
         self._field_widget = GameFieldView(
             self._game_manager.field, self._screen, 100, 100
